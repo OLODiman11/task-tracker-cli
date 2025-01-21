@@ -8,6 +8,7 @@ import by.olodiman11.tasktrackercli.model.Task;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class Main {
 
@@ -21,20 +22,38 @@ public class Main {
 
     private static void run(String... args) throws Exception {
         JsonMapper mapper = new JsonMapperImpl();
-        Task task = new Task(
-                1,
-                "Новая задача",
-                TaskStatus.DONE,
-                LocalDateTime.now(),
-                LocalDateTime.now()
-        );
-
+        List<Task> tasks = createListOfTasks();
         Path tasksPath = Path.of("tasks.json");
         Files.deleteIfExists(tasksPath);
         Files.createFile(tasksPath);
-        Files.writeString(tasksPath, mapper.toJson(task));
+        Files.writeString(tasksPath, mapper.toJsonList(tasks));
         String json = Files.readString(tasksPath);
-        Task task1 = mapper.fromJson(json, Task.class);
-        System.out.println(task1);
+        List<Task> tasks1 = mapper.fromJsonList(json, Task.class);
+        System.out.println(tasks1);
+    }
+
+    private static List<Task> createListOfTasks() {
+        return List.of(
+                new Task(
+                        1,
+                        "Задача 1",
+                        TaskStatus.TODO,
+                        LocalDateTime.now(),
+                        LocalDateTime.now()
+                ),
+                new Task(
+                        2,
+                        "Задача 2",
+                        TaskStatus.IN_PROGRESS,
+                        LocalDateTime.now(),
+                        LocalDateTime.now()
+                ),
+                new Task(
+                        3,
+                        "Задача 3",
+                        TaskStatus.DONE,
+                        LocalDateTime.now(),
+                        LocalDateTime.now()
+                ));
     }
 }

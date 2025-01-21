@@ -8,7 +8,9 @@ import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -37,6 +39,23 @@ public class JsonMapperImpl implements JsonMapper {
 
         Constructor<T> constructor = ReflectionUtils.getConstructor(clazz, parameterTypes);
         return ReflectionUtils.newInstance(constructor, parameters);
+    }
+
+    @Override
+    public <T> String toJsonList(List<T> objects) {
+        return "[" + objects.stream()
+                .map(this::toJson)
+                .collect(Collectors.joining(",")) + "]";
+    }
+
+    @Override
+    public <T> List<T> fromJsonList(String json, Class<T> clazz) {
+        Pattern pattern = Pattern.compile("(\\{[^}]*})+");
+        Matcher matcher = pattern.matcher(json);
+        return matcher.results()
+                .map(MatchResult::group)
+                .map(group -> fromJson(group, clazz))
+                .toList();
     }
 
     private String formatKeyValuePair(String key, Object value) {
