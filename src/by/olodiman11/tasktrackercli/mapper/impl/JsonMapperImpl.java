@@ -6,10 +6,7 @@ import by.olodiman11.tasktrackercli.util.ReflectionUtils;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,7 +52,7 @@ public class JsonMapperImpl implements JsonMapper {
         return matcher.results()
                 .map(MatchResult::group)
                 .map(group -> fromJson(group, clazz))
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private String formatKeyValuePair(String key, Object value) {
