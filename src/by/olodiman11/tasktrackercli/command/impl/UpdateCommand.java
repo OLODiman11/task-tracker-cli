@@ -2,6 +2,7 @@ package by.olodiman11.tasktrackercli.command.impl;
 
 import by.olodiman11.tasktrackercli.command.Command;
 import by.olodiman11.tasktrackercli.model.Task;
+import by.olodiman11.tasktrackercli.util.StringUtils;
 
 import java.time.LocalDateTime;
 
@@ -10,7 +11,7 @@ public class UpdateCommand implements Command {
     public void execute(String... args) {
         if (args.length < 2) throw new IllegalArgumentException("Id and description are required");
         long id = Long.parseLong(args[0]);
-        String description = args[1];
+        String description = StringUtils.strip(args[1], "\"");
 
         Command.changeTasksList(tasks ->
                     tasks.stream()
