@@ -49,7 +49,7 @@ public enum ReflectionUtils {
         try {
             return method.invoke(object, parameters);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getCause().getMessage(), e);
         }
     }
 }

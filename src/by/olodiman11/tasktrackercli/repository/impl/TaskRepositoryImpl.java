@@ -1,5 +1,6 @@
 package by.olodiman11.tasktrackercli.repository.impl;
 
+import by.olodiman11.tasktrackercli.exception.TaskNotFoundException;
 import by.olodiman11.tasktrackercli.mapper.JsonMapper;
 import by.olodiman11.tasktrackercli.model.Task;
 import by.olodiman11.tasktrackercli.repository.TaskRepository;
@@ -40,12 +41,22 @@ public class TaskRepositoryImpl implements TaskRepository {
 
     @Override
     public void update(long id, UnaryOperator<Task> update) {
-        tasks.replaceAll(task -> task.id() == id ? update.apply(task) : task);
+        tasks.stream()
+                .filter(task -> task.id() == id)
+                .findFirst()
+                .ifPresentOrElse(task -> tasks.set(tasks.indexOf(task), update.apply(task)), () -> {
+                    throw new TaskNotFoundException("Task with id " + id + " not found");
+                });
     }
 
     @Override
     public void delete(long id) {
-        tasks.removeIf(task -> task.id() == id);
+        tasks.stream()
+                .filter(task -> task.id() == id)
+                .findFirst()
+                .ifPresentOrElse(tasks::remove, () -> {
+                    throw new TaskNotFoundException("Task with id " + id + " not found");
+                });
     }
 
 

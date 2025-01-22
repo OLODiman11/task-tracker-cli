@@ -2,6 +2,8 @@ package by.olodiman11.tasktrackercli.dispatcher.impl;
 
 import by.olodiman11.tasktrackercli.controller.CommandController;
 import by.olodiman11.tasktrackercli.dispatcher.CommandDispatcher;
+import by.olodiman11.tasktrackercli.exception.InvalidArgumentException;
+import by.olodiman11.tasktrackercli.exception.UnknownCommandException;
 import by.olodiman11.tasktrackercli.util.ReflectionUtils;
 import by.olodiman11.tasktrackercli.util.StringUtils;
 
@@ -19,34 +21,46 @@ public class CommandDispatcherImpl implements CommandDispatcher {
 
     @Override
     public String dispatch(String... args) {
-        String command = args[0];
-        String[] arguments = Arrays.stream(args)
-                .skip(1)
-                .map(StringUtils::unquote)
-                .toArray(String[]::new);
-        Method method = getMethod(command, arguments);
-        Object[] parsedArgs = parseArguments(arguments, method.getParameterTypes());
-        return (String) ReflectionUtils.invokeMethod(method, controller, parsedArgs);
+        try {
+            String command = args[0];
+            String[] arguments = Arrays.stream(args)
+                    .skip(1)
+                    .map(StringUtils::unquote)
+                    .toArray(String[]::new);
+            Method method = getMethod(command, arguments);
+            Object[] parsedArgs = parseArguments(arguments, method.getParameterTypes());
+            return (String) ReflectionUtils.invokeMethod(method, controller, parsedArgs);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
     }
 
     private Method getMethod(String name, String... args) {
-        return Arrays.stream(controller.getClass().getDeclaredMethods())
-                .filter(method -> method.getName().equals(name) && method.getParameterCount() == args.length)
-                .findFirst()
-                .get();
+        try {
+            return Arrays.stream(controller.getClass().getDeclaredMethods())
+                    .filter(method -> method.getName().equals(name) && method.getParameterCount() == args.length)
+                    .findFirst()
+                    .get();
+        } catch (Exception e) {
+            throw new UnknownCommandException("Unknown command: " + name + " with " + args.length + " arguments", e);
+        }
     }
 
     private Object[] parseArguments(String[] arguments, Class<?>[] parameterTypes) {
         return IntStream.range(0, arguments.length)
-                .mapToObj(i -> {
-                    String arg = arguments[i];
-                    Class<?> type = parameterTypes[i];
-                    if(type.equals(long.class))
-                        return Long.parseLong(arg);
-                    if(type.isEnum())
-                        return Enum.valueOf((Class<Enum>) type, arg);
-                    return type.cast(arg);
-                })
+                .mapToObj(i -> castArgument(arguments[i], parameterTypes[i]))
                 .toArray(Object[]::new);
+    }
+
+    private Object castArgument(String arg, Class<?> type) {
+        try {
+            if(type.equals(long.class))
+                return Long.parseLong(arg);
+            if(type.isEnum())
+                return Enum.valueOf((Class<? extends Enum>) type, arg);
+            return type.cast(arg);
+        } catch (Exception e) {
+            throw new InvalidArgumentException("Invalid argument: " + arg + ". Expected type: " + type, e);
+        }
     }
 }
