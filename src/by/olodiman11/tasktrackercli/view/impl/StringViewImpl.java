@@ -14,31 +14,46 @@ import java.util.stream.IntStream;
 
 public class StringViewImpl implements StringView {
 
+    private final List<String> header = getHeader();
+
     @Override
     public String toString(List<Task> tasks) {
         List<List<String>> rows = new ArrayList<>();
-        List<String> fieldNames = Arrays.stream(Task.class.getDeclaredFields())
-                .map(Field::getName)
-                .toList();
-        rows.add(fieldNames);
-        tasks.stream()
-                .map(this::stringsOfFields)
-                .forEach(rows::add);
-        int[] columnWidths = IntStream.range(0, fieldNames.size())
-                .map(col -> rows.stream()
-                        .mapToInt(row -> row.get(col).length())
-                        .max()
-                        .getAsInt())
-                .toArray();
-        String template = Arrays.stream(columnWidths)
-                .mapToObj(width -> "%" + width + "s")
-                .collect(Collectors.joining("   "));
+        rows.add(header);
+        rows.addAll(getData(tasks));
+
+        List<Integer> widths = getColumnWidths(rows);
+
+        String template = getRowTemplate(widths);
+
         return rows.stream()
                 .map(row -> template.formatted(row.toArray()))
                 .collect(Collectors.joining("\n"));
     }
 
-    private List<String> stringsOfFields(Task task) {
+    private List<Integer> getColumnWidths(List<List<String>> rows) {
+        return IntStream.range(0, rows.getFirst().size())
+                .mapToObj(col -> rows.stream()
+                        .mapToInt(row -> row.get(col).length())
+                        .max()
+                        .getAsInt())
+                .toList();
+    }
+
+    private String getRowTemplate(List<Integer> widths) {
+        return widths.stream()
+                .map(width -> "%" + width + "s")
+                .collect(Collectors.joining("   "));
+
+    }
+
+    private List<List<String>> getData(List<Task> tasks) {
+        return tasks.stream()
+                .map(this::getRow)
+                .toList();
+    }
+
+    private List<String> getRow(Task task) {
         return List.of(
                 String.valueOf(task.id()),
                 task.description(),
@@ -46,5 +61,11 @@ public class StringViewImpl implements StringView {
                 task.createdAt().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)),
                 task.updatedAt().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT))
         );
+    }
+
+    private List<String> getHeader() {
+        return Arrays.stream(Task.class.getDeclaredFields())
+                .map(Field::getName)
+                .toList();
     }
 }
