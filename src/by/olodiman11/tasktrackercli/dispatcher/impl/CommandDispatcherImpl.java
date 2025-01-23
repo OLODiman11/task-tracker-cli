@@ -36,14 +36,15 @@ public class CommandDispatcherImpl implements CommandDispatcher {
     }
 
     private Method getMethod(String name, String... args) {
-        try {
-            return Arrays.stream(controller.getClass().getDeclaredMethods())
-                    .filter(method -> method.getName().equals(name) && method.getParameterCount() == args.length)
-                    .findFirst()
-                    .get();
-        } catch (Exception e) {
-            throw new UnknownCommandException("Unknown command: " + name + " with " + args.length + " arguments", e);
-        }
+        Method[] possibleMethods = ReflectionUtils.getMethodsByName(controller.getClass(), name);
+        if (possibleMethods.length == 0) throw new UnknownCommandException("Unknown command: " + name);
+        return Arrays.stream(possibleMethods)
+                .filter(method -> method.getParameterCount() == args.length)
+                .findFirst()
+                .orElseThrow(() -> new InvalidArgumentException(
+                        "Invalid amount of arguments for " + name + " command.\n" +
+                        "Possible options:\n" +
+                        controller.help(name)));
     }
 
     private Object[] parseArguments(String[] arguments, Class<?>[] parameterTypes) {

@@ -10,4 +10,6 @@ public interface CommandController {
     String list();
     String list(TaskStatus status);
     String exit();
+    String help();
+    String help(String command);
 }

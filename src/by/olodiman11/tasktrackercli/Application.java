@@ -41,6 +41,7 @@ public class Application {
         while (running) {
             System.out.print(CLI_PREFIX);
             args = sc.nextLine().split(" ");
+            if (args.length == 1 && args[0].isBlank()) continue;
             executeCommand(dispatcher, args);
         }
     }

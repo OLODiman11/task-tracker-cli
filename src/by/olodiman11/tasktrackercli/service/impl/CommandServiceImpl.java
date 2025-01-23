@@ -2,11 +2,14 @@ package by.olodiman11.tasktrackercli.service.impl;
 
 import by.olodiman11.tasktrackercli.Application;
 import by.olodiman11.tasktrackercli.enums.TaskStatus;
+import by.olodiman11.tasktrackercli.exception.InvalidArgumentException;
 import by.olodiman11.tasktrackercli.model.Task;
 import by.olodiman11.tasktrackercli.repository.TaskRepository;
 import by.olodiman11.tasktrackercli.service.CommandService;
 
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 public class CommandServiceImpl implements CommandService {
@@ -75,5 +78,22 @@ public class CommandServiceImpl implements CommandService {
     @Override
     public void exit() {
         Application.stop();
+    }
+
+    @Override
+    public List<Method> help() {
+        return Arrays.stream(this.getClass().getDeclaredMethods())
+                .filter(method -> !method.isSynthetic())
+                .toList();
+    }
+
+    @Override
+    public List<Method> help(String command) {
+        List<Method> methods = help();
+        if(methods.stream().noneMatch(method -> method.getName().equals(command)))
+            throw new InvalidArgumentException("Unknown command: " + command);
+        return methods.stream()
+                .filter(method -> method.getName().equals(command))
+                .toList();
     }
 }

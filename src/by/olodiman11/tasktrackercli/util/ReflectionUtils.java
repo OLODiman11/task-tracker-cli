@@ -52,4 +52,10 @@ public enum ReflectionUtils {
             throw new RuntimeException(e.getCause().getMessage(), e);
         }
     }
+
+    public static Method[] getMethodsByName(Class<?> clazz, String methodName) {
+        return Arrays.stream(clazz.getDeclaredMethods())
+                .filter(method -> method.getName().equals(methodName))
+                .toArray(Method[]::new);
+    }
 }

@@ -4,6 +4,7 @@ import by.olodiman11.tasktrackercli.model.Task;
 import by.olodiman11.tasktrackercli.view.StringView;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ public class StringViewImpl implements StringView {
     private final List<String> header = getHeader();
 
     @Override
-    public String toString(List<Task> tasks) {
+    public String toTableView(List<Task> tasks) {
         List<List<String>> rows = new ArrayList<>();
         rows.add(header);
         rows.addAll(getData(tasks));
@@ -29,6 +30,18 @@ public class StringViewImpl implements StringView {
         return rows.stream()
                 .map(row -> template.formatted(row.toArray()))
                 .collect(Collectors.joining("\n"));
+    }
+
+    @Override
+    public String toListView(List<Method> commands) {
+        return IntStream.range(0, commands.size())
+                .mapToObj(i -> {
+                    Method method = commands.get(i);
+                    String prefix = i + 1 + ") " + method.getName() + " ";
+                    return prefix + Arrays.stream(method.getParameterTypes())
+                            .map(type -> "<" + type.getSimpleName() + ">")
+                            .collect(Collectors.joining(" "));
+                }).collect(Collectors.joining("\n"));
     }
 
     private List<Integer> getColumnWidths(List<List<String>> rows) {
