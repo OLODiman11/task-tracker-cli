@@ -15,12 +15,16 @@ import by.olodiman11.tasktrackercli.view.impl.StringViewImpl;
 
 import java.nio.file.Path;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class Application {
 
     public static final Path TASKS_PATH = Path.of("tasks.json");
     public static final String CLI_PREFIX = "ttracker > ";
 
+    private static final Pattern ARGS_PATTERN = Pattern.compile("\"([^\"]+)\"|(\\S+)");
     private static boolean running = true;
 
     public static void main(String[] args) {
@@ -40,8 +44,10 @@ public class Application {
         Scanner sc = new Scanner(System.in);
         while (running) {
             System.out.print(CLI_PREFIX);
-            args = sc.nextLine().split(" ");
-            if (args.length == 1 && args[0].isBlank()) continue;
+            Matcher matcher = ARGS_PATTERN.matcher(sc.nextLine());
+            args = Stream.iterate(matcher, Matcher::find, m -> m)
+                    .map(m -> m.group(1) == null ? m.group(2) : m.group(1))
+                    .toArray(String[]::new);
             executeCommand(dispatcher, args);
         }
     }
