@@ -1,5 +1,6 @@
 package by.olodiman11.tasktrackercli.service.impl;
 
+import by.olodiman11.tasktrackercli.Application;
 import by.olodiman11.tasktrackercli.enums.TaskStatus;
 import by.olodiman11.tasktrackercli.model.Task;
 import by.olodiman11.tasktrackercli.repository.TaskRepository;
@@ -69,5 +70,10 @@ public class CommandServiceImpl implements CommandService {
     @Override
     public List<Task> list(TaskStatus status) {
         return repository.findAll(task -> task.status().equals(status));
+    }
+
+    @Override
+    public void exit() {
+        Application.stop();
     }
 }

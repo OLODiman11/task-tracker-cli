@@ -9,4 +9,5 @@ public interface CommandController {
     String status(long id, TaskStatus status);
     String list();
     String list(TaskStatus status);
+    String exit();
 }

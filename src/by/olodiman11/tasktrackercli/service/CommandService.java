@@ -12,4 +12,5 @@ public interface CommandService {
     void status(long id, TaskStatus status);
     List<Task> list();
     List<Task> list(TaskStatus status);
+    void exit();
 }

@@ -53,4 +53,10 @@ public class CommandControllerImpl implements CommandController {
         List<Task> tasks = service.list(status);
         return view.toString(tasks);
     }
+
+    @Override
+    public String exit() {
+        service.exit();
+        return "Exiting task tracker cli";
+    }
 }
